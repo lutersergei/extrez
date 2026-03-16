@@ -6,23 +6,104 @@ function debounce(func, wait) {
     };
 }
 
+let isFetching = false;
+
+async function checkAndFetchMore() {
+    if (isFetching) return;
+    
+    const items = document.querySelectorAll('.b-content__inline_item');
+    let visibleCount = 0;
+    items.forEach(item => {
+        if (!item.classList.contains('rf-hidden')) visibleCount++;
+    });
+
+    if (visibleCount < rfStorage.targetVisibleCount) {
+        const nextButton = document.querySelector('.b-navigation__next');
+        if (!nextButton) {
+            rfUI.setStatus('Больше страниц нет');
+            return;
+        }
+        
+        const nextPageLink = nextButton.closest('a');
+        if (!nextPageLink || !nextPageLink.href) {
+            rfUI.setStatus('Больше страниц нет');
+            return;
+        }
+
+        isFetching = true;
+        rfUI.setStatus('Загрузка новых карточек...');
+        
+        try {
+            const response = await fetch(nextPageLink.href);
+            const text = await response.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            
+            const newItems = doc.querySelectorAll('.b-content__inline_item');
+            const container = document.querySelector('.b-content__inline_items');
+            
+            if (newItems.length > 0 && container) {
+                newItems.forEach(item => {
+                    container.appendChild(item);
+                });
+            }
+
+            // Обновляем блок навигации с новой страницы, чтобы следующий fetch нашел следующую ссылку
+            const newNav = doc.querySelector('.b-navigation');
+            const oldNav = document.querySelector('.b-navigation');
+            if (oldNav && newNav) {
+                oldNav.innerHTML = newNav.innerHTML;
+            } else if (oldNav) {
+                 oldNav.remove();
+            }
+
+            isFetching = false;
+            rfUI.setStatus('');
+            
+            // Запускаем обновление панели и фильтров, это также рекурсивно вызовет checkAndFetchMore если надо
+            refreshState();
+            
+        } catch (e) {
+            console.error('Failed to fetch next page', e);
+            isFetching = false;
+            rfUI.setStatus('Ошибка загрузки');
+        }
+    } else {
+        rfUI.setStatus(`Отображается: ${visibleCount}`);
+    }
+}
+
 function refreshState() {
     const availableCountries = rfParser.getAllCountriesOnPage();
     if (availableCountries.length > 0) {
-        rfUI.createOrUpdatePanel(availableCountries, rfStorage.blacklistedCountries, (country, isBlocked) => {
-            rfStorage.toggleCountry(country, isBlocked);
-            rfUI.applyFilter(rfStorage.blacklistedCountries);
-        });
+        rfUI.createOrUpdatePanel(
+            availableCountries, 
+            rfStorage.blacklistedCountries,
+            rfStorage.targetVisibleCount,
+            (country, isBlocked) => {
+                rfStorage.toggleCountry(country, isBlocked);
+                rfUI.applyFilter(rfStorage.blacklistedCountries);
+                checkAndFetchMore();
+            },
+            (newCount) => {
+                rfStorage.setTargetCount(newCount);
+                checkAndFetchMore();
+            }
+        );
         rfUI.applyFilter(rfStorage.blacklistedCountries);
+        checkAndFetchMore(); // Запускаем проверку подгрузки
     }
 }
 
 function setupObserver() {
     const container = document.querySelector('.b-content__inline_items') || document.body;
     const observer = new MutationObserver(debounce((mutations) => {
+        // Игнорируем мутации, если мы сами сейчас добавляем элементы
+        if (isFetching) return;
         const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
         if (hasNewNodes) {
-            refreshState(); // Re-parse countries and re-render panel
+            refreshState();
         }
     }, 200));
     observer.observe(container, { childList: true, subtree: true });
