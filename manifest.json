@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Rezka Filter",
+  "version": "1.0",
+  "description": "Фильтр сериалов по странам на сайте rezka.fi",
+  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://rezka.fi/*",
+        "*://*.rezka.fi/*",
+        "*://hdrezka.ac/*",
+        "*://*.hdrezka.ac/*"
+      ],
+      "css": ["styles.css"],
+      "js": ["storage.js", "parser.js", "ui.js", "main.js"]
+    }
+  ]
+}
