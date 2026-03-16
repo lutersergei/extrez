@@ -43,21 +43,32 @@ async function checkAndFetchMore() {
             const newItems = doc.querySelectorAll('.b-content__inline_item');
             const container = document.querySelector('.b-content__inline_items');
             
+            const oldNav = document.querySelector('.b-navigation');
+
             if (newItems.length > 0 && container) {
+                // Удаляем скрытые разделители (clear:both и т.п.) перед навигацией, чтобы карточки шли сплошным потоком
+                if (oldNav) {
+                    let prev = oldNav.previousElementSibling;
+                    while (prev && !prev.classList.contains('b-content__inline_item')) {
+                        const toRemove = prev;
+                        prev = prev.previousElementSibling;
+                        toRemove.remove();
+                    }
+                }
+
                 newItems.forEach(item => {
-                    container.appendChild(item);
+                    if (oldNav) {
+                        container.insertBefore(item, oldNav);
+                    } else {
+                        container.appendChild(item);
+                    }
                 });
             }
 
             // Обновляем блок навигации с новой страницы, чтобы следующий fetch нашел следующую ссылку
             const newNav = doc.querySelector('.b-navigation');
-            const oldNav = document.querySelector('.b-navigation');
             if (oldNav && newNav) {
                 oldNav.innerHTML = newNav.innerHTML;
-                // Перемещаем блок навигации в самый конец контейнера после всех карточек
-                if (container) {
-                    container.appendChild(oldNav);
-                }
             } else if (oldNav) {
                  oldNav.remove();
             }
