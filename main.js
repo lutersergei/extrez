@@ -54,6 +54,10 @@ async function checkAndFetchMore() {
             const oldNav = document.querySelector('.b-navigation');
             if (oldNav && newNav) {
                 oldNav.innerHTML = newNav.innerHTML;
+                // Перемещаем блок навигации в самый конец контейнера после всех карточек
+                if (container) {
+                    container.appendChild(oldNav);
+                }
             } else if (oldNav) {
                  oldNav.remove();
             }
