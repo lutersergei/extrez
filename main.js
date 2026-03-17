@@ -25,7 +25,7 @@ async function checkAndFetchMore() {
         }
         
         const nextPageLink = nextButton.closest('a');
-        if (!nextPageLink || !nextPageLink.href) {
+        if (!nextPageLink || !nextPageLink.href || nextPageLink.href.startsWith('javascript:')) {
             rfUI.setStatus('Больше страниц нет');
             return;
         }
