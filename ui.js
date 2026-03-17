@@ -41,6 +41,9 @@ const rfUI = {
                     <input type="number" id="rf-target-count" min="1" max="1000" value="${targetVisibleCount}">
                 </label>
             </div>
+            <div class="counter" style="margin-bottom: 10px; font-size: 13px; color: #ccc;">
+                Скрыто: <b id="rf-hidden-count">0</b>
+            </div>
             <div id="rf-countries-list" class="scrollable"></div>
             <div id="rf-status" class="status"></div>
         `;
@@ -75,14 +78,21 @@ const rfUI = {
 
     applyFilter: function(blacklistedCountries) {
         const items = document.querySelectorAll('.b-content__inline_item');
+        let hiddenCount = 0;
         items.forEach(item => {
             const country = rfParser.getCountryFromItem(item);
             if (country && blacklistedCountries.includes(country)) {
                 item.classList.add('rf-hidden');
+                hiddenCount++;
             } else {
                 item.classList.remove('rf-hidden');
             }
         });
+        
+        if (this.panel) {
+            const countSpan = this.panel.querySelector('#rf-hidden-count');
+            if (countSpan) countSpan.textContent = hiddenCount;
+        }
     },
     
     setStatus: function(text) {
