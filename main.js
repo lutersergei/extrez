@@ -91,13 +91,11 @@ async function checkAndFetchMore() {
 
 function refreshState() {
     const discoveredCountries = rfParser.getAllCountriesOnPage();
-    if (discoveredCountries.length > 0) {
-        rfStorage.addKnownCountries(discoveredCountries);
-    }
+    const allCountriesToDisplay = Array.from(new Set([...discoveredCountries, ...rfStorage.blacklistedCountries]));
     
-    if (rfStorage.knownCountries.length > 0) {
+    if (allCountriesToDisplay.length > 0) {
         rfUI.createOrUpdatePanel(
-            rfStorage.knownCountries, 
+            allCountriesToDisplay, 
             rfStorage.blacklistedCountries,
             rfStorage.targetVisibleCount,
             (country, isBlocked) => {
