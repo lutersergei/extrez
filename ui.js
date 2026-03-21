@@ -2,7 +2,7 @@ const rfUI = {
     panel: null,
     shadow: null,
 
-    createOrUpdatePanel: function(availableCountries, blacklistedCountries, targetVisibleCount, onToggle, onCountChange) {
+    createOrUpdatePanel: function(allCountries, blacklistedCountries, targetVisibleCount, onToggle, onCountChange) {
         if (!this.panel) {
             const host = document.createElement('div');
             host.id = 'rf-panel-host';
@@ -57,8 +57,13 @@ const rfUI = {
         });
 
         const listContainer = this.panel.querySelector('#rf-countries-list');
+        listContainer.innerHTML = '';
         
-        availableCountries.forEach(country => {
+        const blocked = allCountries.filter(c => blacklistedCountries.includes(c)).sort();
+        const available = allCountries.filter(c => !blacklistedCountries.includes(c)).sort();
+        const sortedCountries = [...blocked, ...available];
+        
+        sortedCountries.forEach(country => {
             const label = document.createElement('label');
             label.className = 'country';
             const checkbox = document.createElement('input');
@@ -80,8 +85,9 @@ const rfUI = {
         const items = document.querySelectorAll('.b-content__inline_item');
         let hiddenCount = 0;
         items.forEach(item => {
-            const country = rfParser.getCountryFromItem(item);
-            if (country && blacklistedCountries.includes(country)) {
+            const countries = rfParser.getCountriesFromItem(item);
+            const isBlocked = countries.some(country => blacklistedCountries.includes(country));
+            if (isBlocked) {
                 item.classList.add('rf-hidden');
                 hiddenCount++;
             } else {
