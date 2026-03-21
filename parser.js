@@ -13,6 +13,11 @@ const rfParser = {
         return /^\d{4}(\s*-\s*(\.\.\.|\d{4})?)?$/.test(token);
     },
 
+    isGenreToken: function(token) {
+        const lower = token.toLowerCase();
+        return /^(боевик|боевики|драма|драмы|комедия|комедии|ужасы|триллер|триллеры|фэнтези|фантастика|аниме|документальный|документальные|приключения|мелодрама|мелодрамы|семейный|семейные|криминал|детектив|детективы|исторический|исторические|биография|биографические|вестерн|вестерны|спорт|спортивные|мюзикл|мюзиклы|музыка|музыкальные|реалити-шоу|ток-шоу|детский|детские|короткометражка|короткометражные|сказка|сказки|эротика|нуар)$/.test(lower);
+    },
+
     cleanToken: function(token) {
         return token
             .replace(/\u00a0/g, ' ')
@@ -28,7 +33,7 @@ const rfParser = {
             return null;
         }
 
-        if (this.isYearToken(cleaned)) {
+        if (this.isYearToken(cleaned) || this.isGenreToken(cleaned)) {
             return null;
         }
 
