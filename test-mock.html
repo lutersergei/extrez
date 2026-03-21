@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>Rezka Filter Mock Test</title>
+</head>
+<body>
+    <div class="b-content__inline_items">
+        <div class="b-content__inline_item" data-id="86781">
+            <div class="b-content__inline_item-link">
+                <a>Жёсткий лёд</a>
+                <div>2026 - ..., Россия, Документальные</div>
+            </div>
+        </div>
+        <div class="b-content__inline_item" data-id="85991">
+            <div class="b-content__inline_item-link">
+                <a>Любовь между строк</a>
+                <div>2026, Китай, Драмы</div>
+            </div>
+        </div>
+        <div class="b-content__inline_item" data-id="82709">
+            <div class="b-content__inline_item-link">
+                <a>Рыцарь Семи Королевств</a>
+                <div>2026 - ..., США, Фэнтези</div>
+            </div>
+        </div>
+        <div class="b-content__inline_item" data-id="82710">
+            <div class="b-content__inline_item-link">
+                <a>Леон</a>
+                <div>1994, Франция, Боевики</div>
+            </div>
+        </div>
+        <div class="b-content__inline_item" data-id="82711">
+            <div class="b-content__inline_item-link">
+                <a>Тьма</a>
+                <div>2017 - 2020, Германия, Триллеры</div>
+            </div>
+        </div>
+        <div class="b-content__inline_item" data-id="82712">
+            <div class="b-content__inline_item-link">
+                <a>Унесённые призраками</a>
+                <div>2001, Япония, Аниме</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Мокаем chrome.storage для тестов -->
+    <script>
+        window.chrome = {
+            storage: {
+                local: {
+                    _data: {
+                        blacklistedCountries: ['США'],
+                        knownCountries: ['Германия', 'Китай', 'Россия', 'США', 'Франция', 'Япония']
+                    },
+                    get: function(keys, cb) {
+                        if (Array.isArray(keys)) {
+                            let result = {};
+                            keys.forEach(k => {
+                                if (this._data[k] !== undefined) {
+                                    result[k] = this._data[k];
+                                }
+                            });
+                            cb(result);
+                        } else {
+                            cb(this._data);
+                        }
+                    },
+                    set: function(data, cb) {
+                        Object.assign(this._data, data);
+                        if (cb) cb();
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="storage.js"></script>
+    <script src="parser.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
