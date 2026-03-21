@@ -90,20 +90,26 @@ async function checkAndFetchMore() {
 }
 
 function refreshState() {
-    const availableCountries = rfParser.getAllCountriesOnPage();
-    if (availableCountries.length > 0) {
+    const discoveredCountries = rfParser.getAllCountriesOnPage();
+    const allCountriesToDisplay = Array.from(new Set([...discoveredCountries, ...rfStorage.blacklistedCountries]));
+    
+    if (allCountriesToDisplay.length > 0) {
         rfUI.createOrUpdatePanel(
-            availableCountries, 
+            allCountriesToDisplay, 
             rfStorage.blacklistedCountries,
             rfStorage.targetVisibleCount,
+            rfStorage.isPanelOpen,
             (country, isBlocked) => {
                 rfStorage.toggleCountry(country, isBlocked);
-                rfUI.applyFilter(rfStorage.blacklistedCountries);
-                checkAndFetchMore();
+                refreshState();
             },
             (newCount) => {
                 rfStorage.setTargetCount(newCount);
                 checkAndFetchMore();
+            },
+            (isOpen) => {
+                rfStorage.setPanelOpen(isOpen);
+                refreshState();
             }
         );
         rfUI.applyFilter(rfStorage.blacklistedCountries);
