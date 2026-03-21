@@ -98,6 +98,7 @@ function refreshState() {
             allCountriesToDisplay, 
             rfStorage.blacklistedCountries,
             rfStorage.targetVisibleCount,
+            rfStorage.isPanelOpen,
             (country, isBlocked) => {
                 rfStorage.toggleCountry(country, isBlocked);
                 refreshState();
@@ -105,6 +106,10 @@ function refreshState() {
             (newCount) => {
                 rfStorage.setTargetCount(newCount);
                 checkAndFetchMore();
+            },
+            (isOpen) => {
+                rfStorage.setPanelOpen(isOpen);
+                refreshState();
             }
         );
         rfUI.applyFilter(rfStorage.blacklistedCountries);
